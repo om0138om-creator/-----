@@ -1,71 +1,33 @@
-name: Build Flutter APK
+name: Build APK
 
 on:
   push:
-    branches: [ main, master ]
-    tags:
-      - 'v*'
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
-  build-android:
-    name: Build Android APK
+  build:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: ☕ Setup Java
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-          cache: 'gradle'
 
-      - name: 🐦 Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.16.0'
           channel: 'stable'
-          cache: true
 
-      - name: 📦 Get dependencies
-        run: flutter pub get
+      - run: flutter pub get
+      - run: dart format . --fix
+      - run: flutter build apk --release --no-tree-shake-icons
 
-      - name: 🎨 Format code
-        run: dart format . --fix
-
-      - name: 🏗️ Build APK (Release)
-        run: flutter build apk --release --no-tree-shake-icons
-
-      - name: 📤 Upload Release APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: font-studio-apk
+          name: FontStudio-APK
           path: build/app/outputs/flutter-apk/app-release.apk
-
-  release:
-    name: Create Release
-    needs: build-android
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    
-    steps:
-      - name: 📥 Download APK
-        uses: actions/download-artifact@v4
-        with:
-          name: font-studio-apk
-          path: ./
-
-      - name: 📝 Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: Font Studio ${{ github.ref_name }}
-          files: app-release.apk
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
