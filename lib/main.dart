@@ -15,7 +15,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF1a1a2e),
-        primaryColor: const Color(0xFF6C63FF),
       ),
       home: const EditorScreen(),
     );
@@ -30,10 +29,8 @@ class EditorScreen extends StatefulWidget {
 }
 
 class _EditorScreenState extends State<EditorScreen> {
-  String text = 'مرحباً بالعالم\nHello World 123';
+  String text = 'مرحباً بالعالم\nHello World';
   double fontSize = 36;
-  Color textColor = Colors.white;
-  Color bgColor = const Color(0xFF0f3460);
   bool showFeatures = false;
 
   Map<String, bool> features = {
@@ -45,8 +42,6 @@ class _EditorScreenState extends State<EditorScreen> {
     'ss02': false,
     'swsh': false,
     'smcp': false,
-    'onum': false,
-    'frac': false,
   };
 
   List<ui.FontFeature> getFeatures() {
@@ -61,13 +56,12 @@ class _EditorScreenState extends State<EditorScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF16213e),
-        title: const Text('Font Studio - فونت ستوديو'),
-        centerTitle: true,
+        title: const Text('Font Studio'),
         actions: [
           IconButton(
             icon: Icon(
               Icons.text_fields,
-              color: showFeatures ? const Color(0xFF6C63FF) : Colors.white,
+              color: showFeatures ? Colors.amber : Colors.white,
             ),
             onPressed: () => setState(() => showFeatures = !showFeatures),
           ),
@@ -75,12 +69,11 @@ class _EditorScreenState extends State<EditorScreen> {
       ),
       body: Column(
         children: [
-          // Canvas
           Expanded(
             child: Container(
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: bgColor,
+                color: const Color(0xFF0f3460),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
@@ -92,7 +85,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     textDirection: TextDirection.rtl,
                     style: TextStyle(
                       fontSize: fontSize,
-                      color: textColor,
+                      color: Colors.white,
                       fontFeatures: getFeatures(),
                     ),
                   ),
@@ -100,22 +93,18 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
             ),
           ),
-
-          // Controls
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFF16213e),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
+            color: const Color(0xFF16213e),
             child: Column(
               children: [
-                // Text Input
                 TextField(
                   onChanged: (v) => setState(() => text = v),
                   textDirection: TextDirection.rtl,
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'اكتب النص هنا...',
+                    hintText: 'اكتب هنا...',
+                    hintStyle: const TextStyle(color: Colors.white38),
                     filled: true,
                     fillColor: const Color(0xFF0f3460),
                     border: OutlineInputBorder(
@@ -124,35 +113,22 @@ class _EditorScreenState extends State<EditorScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-
-                // Font Size
+                const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.format_size, color: Colors.white54),
+                    const Text('الحجم:', style: TextStyle(color: Colors.white70)),
                     Expanded(
                       child: Slider(
                         value: fontSize,
                         min: 12,
-                        max: 80,
-                        activeColor: const Color(0xFF6C63FF),
+                        max: 72,
                         onChanged: (v) => setState(() => fontSize = v),
                       ),
                     ),
-                    Text('${fontSize.toInt()}',
-                        style: const TextStyle(color: Color(0xFF6C63FF))),
+                    Text('${fontSize.toInt()}', style: const TextStyle(color: Colors.white)),
                   ],
                 ),
-
-                // OpenType Features
-                if (showFeatures) ...[
-                  const SizedBox(height: 16),
-                  const Align(
-                    alignment: Alignment.centerRight,
-                    child: Text('خصائص OpenType:',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(height: 8),
+                if (showFeatures)
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -160,13 +136,10 @@ class _EditorScreenState extends State<EditorScreen> {
                       return FilterChip(
                         label: Text(tag),
                         selected: features[tag]!,
-                        onSelected: (v) =>
-                            setState(() => features[tag] = v),
-                        selectedColor: const Color(0xFF6C63FF),
+                        onSelected: (v) => setState(() => features[tag] = v),
                       );
                     }).toList(),
                   ),
-                ],
               ],
             ),
           ),
