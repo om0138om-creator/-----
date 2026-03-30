@@ -26,9 +26,6 @@ dependencies:
   share_plus: ^7.2.1
   permission_handler: ^11.0.1
   
-  # OpenType & Font Parsing
-  freetype_dart: ^0.0.5
-  
   # State Management
   provider: ^6.1.1
   
@@ -37,12 +34,6 @@ dependencies:
   
   # Storage
   shared_preferences: ^2.2.2
-  sqflite: ^2.3.0
-  
-  # UI Components
-  flutter_slidable: ^3.0.1
-  reorderables: ^0.6.0
-  matrix_gesture_detector: ^0.1.0
   
   # Utils
   uuid: ^4.2.1
