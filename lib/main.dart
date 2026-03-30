@@ -1,12 +1,7 @@
-import 'dart:ui';
-import 'dart:io';
-import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 void main() async {
@@ -41,6 +36,7 @@ class FontStudioApp extends StatelessWidget {
         theme: ThemeData(
           useMaterial3: true,
           brightness: Brightness.dark,
+          fontFamily: 'Roboto',
           primaryColor: const Color(0xFF6C63FF),
           scaffoldBackgroundColor: const Color(0xFF1a1a2e),
           colorScheme: const ColorScheme.dark(
@@ -48,7 +44,6 @@ class FontStudioApp extends StatelessWidget {
             secondary: Color(0xFF00D9FF),
             surface: Color(0xFF16213e),
           ),
-          textTheme: GoogleFonts.cairoTextTheme(ThemeData.dark().textTheme),
         ),
         home: const SplashScreen(),
       ),
@@ -62,8 +57,11 @@ class AppState extends ChangeNotifier {
   double fontSize = 40;
   Color textColor = Colors.white;
   Color backgroundColor = const Color(0xFF0f3460);
-  String fontFamily = 'Cairo';
   TextAlign textAlign = TextAlign.center;
+  double letterSpacing = 0;
+  double wordSpacing = 0;
+  double lineHeight = 1.5;
+  FontWeight fontWeight = FontWeight.normal;
 
   // OpenType Features
   Map<String, bool> features = {
@@ -83,13 +81,6 @@ class AppState extends ChangeNotifier {
     'lnum': false,
     'tnum': false,
     'frac': false,
-  };
-
-  // Variable Font Axes
-  Map<String, double> axes = {
-    'wght': 400,
-    'wdth': 100,
-    'slnt': 0,
   };
 
   // تحديث النص
@@ -122,34 +113,43 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // تحديث محور Variable Font
-  void updateAxis(String tag, double value) {
-    axes[tag] = value;
-    notifyListeners();
-  }
-
   // تحديث المحاذاة
   void updateTextAlign(TextAlign value) {
     textAlign = value;
     notifyListeners();
   }
 
-  // الحصول على FontFeatures
-  List<FontFeature> getFontFeatures() {
-    List<FontFeature> result = [];
-    features.forEach((tag, enabled) {
-      if (enabled) {
-        result.add(FontFeature.enable(tag));
-      }
-    });
-    return result;
+  // تحديث تباعد الحروف
+  void updateLetterSpacing(double value) {
+    letterSpacing = value;
+    notifyListeners();
   }
 
-  // الحصول على FontVariations
-  List<FontVariation> getFontVariations() {
-    List<FontVariation> result = [];
-    axes.forEach((tag, value) {
-      result.add(FontVariation(tag, value));
+  // تحديث تباعد الكلمات
+  void updateWordSpacing(double value) {
+    wordSpacing = value;
+    notifyListeners();
+  }
+
+  // تحديث ارتفاع السطر
+  void updateLineHeight(double value) {
+    lineHeight = value;
+    notifyListeners();
+  }
+
+  // تحديث وزن الخط
+  void updateFontWeight(FontWeight value) {
+    fontWeight = value;
+    notifyListeners();
+  }
+
+  // الحصول على FontFeatures
+  List<ui.FontFeature> getFontFeatures() {
+    List<ui.FontFeature> result = [];
+    features.forEach((tag, enabled) {
+      if (enabled) {
+        result.add(ui.FontFeature.enable(tag));
+      }
     });
     return result;
   }
@@ -283,18 +283,18 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 30),
-                      Text(
+                      const Text(
                         'Font Studio',
-                        style: GoogleFonts.cairo(
+                        style: TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Text(
+                      const Text(
                         'فونت ستوديو',
-                        style: GoogleFonts.cairo(
+                        style: TextStyle(
                           fontSize: 20,
                           color: Colors.white70,
                         ),
@@ -331,7 +331,6 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // Header
                 Row(
                   children: [
                     Container(
@@ -349,12 +348,12 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 15),
-                    Column(
+                    const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Font Studio',
-                          style: GoogleFonts.cairo(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -362,7 +361,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         Text(
                           'فونت ستوديو',
-                          style: GoogleFonts.cairo(
+                          style: TextStyle(
                             fontSize: 14,
                             color: Colors.white54,
                           ),
@@ -371,10 +370,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 40),
-
-                // Main Card
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.all(30),
@@ -405,39 +401,34 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 30),
-                        Text(
+                        const Text(
                           'صمم بإبداع',
-                          style: GoogleFonts.cairo(
+                          style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Text(
+                        const Text(
                           'استخدم خصائص OpenType المتقدمة\nلإنشاء تصاميم احترافية',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.cairo(
+                          style: TextStyle(
                             fontSize: 16,
                             color: Colors.white54,
                             height: 1.5,
                           ),
                         ),
                         const SizedBox(height: 40),
-
-                        // Features
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             _buildFeature(Icons.text_fields, 'OpenType'),
-                            _buildFeature(Icons.tune, 'Variable'),
-                            _buildFeature(Icons.layers, 'طبقات'),
+                            _buildFeature(Icons.tune, 'تنسيق'),
+                            _buildFeature(Icons.color_lens, 'ألوان'),
                           ],
                         ),
-
                         const Spacer(),
-
-                        // Start Button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -459,9 +450,9 @@ class HomeScreen extends StatelessWidget {
                               shadowColor:
                                   const Color(0xFF6C63FF).withOpacity(0.5),
                             ),
-                            child: Text(
+                            child: const Text(
                               'ابدأ التصميم',
-                              style: GoogleFonts.cairo(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -495,7 +486,7 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           label,
-          style: GoogleFonts.cairo(color: Colors.white54, fontSize: 14),
+          style: const TextStyle(color: Colors.white54, fontSize: 14),
         ),
       ],
     );
@@ -512,7 +503,22 @@ class EditorScreen extends StatefulWidget {
 
 class _EditorScreenState extends State<EditorScreen> {
   bool _showOpenType = false;
-  bool _showVariableAxes = false;
+  bool _showTextSettings = false;
+  final TextEditingController _textController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _textController.text = context.read<AppState>().text;
+    });
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -523,24 +529,25 @@ class _EditorScreenState extends State<EditorScreen> {
           appBar: AppBar(
             backgroundColor: const Color(0xFF16213e),
             elevation: 0,
-            title: Text(
+            title: const Text(
               'Font Studio',
-              style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             actions: [
               IconButton(
                 icon: Icon(
-                  Icons.tune,
-                  color:
-                      _showVariableAxes ? const Color(0xFF00D9FF) : Colors.white,
+                  Icons.text_format,
+                  color: _showTextSettings
+                      ? const Color(0xFF00D9FF)
+                      : Colors.white,
                 ),
                 onPressed: () {
                   setState(() {
-                    _showVariableAxes = !_showVariableAxes;
-                    if (_showVariableAxes) _showOpenType = false;
+                    _showTextSettings = !_showTextSettings;
+                    if (_showTextSettings) _showOpenType = false;
                   });
                 },
-                tooltip: 'Variable Axes',
+                tooltip: 'إعدادات النص',
               ),
               IconButton(
                 icon: Icon(
@@ -551,25 +558,10 @@ class _EditorScreenState extends State<EditorScreen> {
                 onPressed: () {
                   setState(() {
                     _showOpenType = !_showOpenType;
-                    if (_showOpenType) _showVariableAxes = false;
+                    if (_showOpenType) _showTextSettings = false;
                   });
                 },
                 tooltip: 'OpenType Features',
-              ),
-              IconButton(
-                icon: const Icon(Icons.share),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'سيتم إضافة خاصية المشاركة قريباً',
-                        style: GoogleFonts.cairo(),
-                      ),
-                      backgroundColor: const Color(0xFF6C63FF),
-                    ),
-                  );
-                },
-                tooltip: 'مشاركة',
               ),
             ],
           ),
@@ -596,11 +588,14 @@ class _EditorScreenState extends State<EditorScreen> {
                       padding: const EdgeInsets.all(20),
                       child: Text(
                         state.text,
-                        style: GoogleFonts.cairo(
+                        style: TextStyle(
                           fontSize: state.fontSize,
                           color: state.textColor,
+                          fontWeight: state.fontWeight,
+                          letterSpacing: state.letterSpacing,
+                          wordSpacing: state.wordSpacing,
+                          height: state.lineHeight,
                           fontFeatures: state.getFontFeatures(),
-                          fontVariations: state.getFontVariations(),
                         ),
                         textAlign: state.textAlign,
                         textDirection: TextDirection.rtl,
@@ -612,7 +607,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
               // Controls Panel
               Expanded(
-                flex: _showOpenType || _showVariableAxes ? 4 : 2,
+                flex: _showOpenType || _showTextSettings ? 4 : 2,
                 child: Container(
                   decoration: const BoxDecoration(
                     color: Color(0xFF16213e),
@@ -627,71 +622,40 @@ class _EditorScreenState extends State<EditorScreen> {
                       children: [
                         // Text Input
                         TextField(
+                          controller: _textController,
                           onChanged: state.updateText,
-                          controller: TextEditingController(text: state.text),
                           maxLines: 2,
                           textDirection: TextDirection.rtl,
-                          style: GoogleFonts.cairo(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                           ),
                           decoration: InputDecoration(
                             hintText: 'اكتب النص هنا...',
-                            hintStyle: GoogleFonts.cairo(color: Colors.white38),
+                            hintStyle: const TextStyle(color: Colors.white38),
                             filled: true,
                             fillColor: const Color(0xFF0f3460),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
                             ),
-                            prefixIcon:
-                                const Icon(Icons.edit, color: Colors.white54),
+                            prefixIcon: const Icon(
+                              Icons.edit,
+                              color: Colors.white54,
+                            ),
                           ),
                         ),
 
                         const SizedBox(height: 20),
 
                         // Font Size
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.format_size,
-                              color: Colors.white54,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              'حجم الخط',
-                              style: GoogleFonts.cairo(color: Colors.white70),
-                            ),
-                            Expanded(
-                              child: Slider(
-                                value: state.fontSize,
-                                min: 12,
-                                max: 100,
-                                activeColor: const Color(0xFF6C63FF),
-                                inactiveColor:
-                                    const Color(0xFF6C63FF).withOpacity(0.3),
-                                onChanged: state.updateFontSize,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6C63FF).withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '${state.fontSize.toInt()}',
-                                style: GoogleFonts.cairo(
-                                  color: const Color(0xFF6C63FF),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+                        _buildSliderRow(
+                          icon: Icons.format_size,
+                          label: 'حجم الخط',
+                          value: state.fontSize,
+                          min: 12,
+                          max: 100,
+                          onChanged: state.updateFontSize,
                         ),
 
                         const SizedBox(height: 15),
@@ -704,7 +668,7 @@ class _EditorScreenState extends State<EditorScreen> {
                                 context,
                                 'لون النص',
                                 state.textColor,
-                                (color) => state.updateTextColor(color),
+                                state.updateTextColor,
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -713,7 +677,7 @@ class _EditorScreenState extends State<EditorScreen> {
                                 context,
                                 'لون الخلفية',
                                 state.backgroundColor,
-                                (color) => state.updateBackgroundColor(color),
+                                state.updateBackgroundColor,
                               ),
                             ),
                           ],
@@ -724,9 +688,9 @@ class _EditorScreenState extends State<EditorScreen> {
                         // Text Alignment
                         Row(
                           children: [
-                            Text(
+                            const Text(
                               'المحاذاة:',
-                              style: GoogleFonts.cairo(color: Colors.white70),
+                              style: TextStyle(color: Colors.white70),
                             ),
                             const SizedBox(width: 15),
                             _buildAlignButton(
@@ -747,16 +711,16 @@ class _EditorScreenState extends State<EditorScreen> {
                           ],
                         ),
 
+                        // Text Settings
+                        if (_showTextSettings) ...[
+                          const SizedBox(height: 20),
+                          _buildTextSettingsPanel(state),
+                        ],
+
                         // OpenType Features
                         if (_showOpenType) ...[
                           const SizedBox(height: 20),
                           _buildOpenTypePanel(state),
-                        ],
-
-                        // Variable Axes
-                        if (_showVariableAxes) ...[
-                          const SizedBox(height: 20),
-                          _buildVariableAxesPanel(state),
                         ],
                       ],
                     ),
@@ -767,6 +731,47 @@ class _EditorScreenState extends State<EditorScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSliderRow({
+    required IconData icon,
+    required String label,
+    required double value,
+    required double min,
+    required double max,
+    required Function(double) onChanged,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white54),
+        const SizedBox(width: 10),
+        Text(label, style: const TextStyle(color: Colors.white70)),
+        Expanded(
+          child: Slider(
+            value: value,
+            min: min,
+            max: max,
+            activeColor: const Color(0xFF6C63FF),
+            inactiveColor: const Color(0xFF6C63FF).withOpacity(0.3),
+            onChanged: onChanged,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFF6C63FF).withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            '${value.toInt()}',
+            style: const TextStyle(
+              color: Color(0xFF6C63FF),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -781,7 +786,8 @@ class _EditorScreenState extends State<EditorScreen> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text(label, style: GoogleFonts.cairo()),
+            backgroundColor: const Color(0xFF16213e),
+            title: Text(label, style: const TextStyle(color: Colors.white)),
             content: SingleChildScrollView(
               child: ColorPicker(
                 pickerColor: color,
@@ -792,7 +798,7 @@ class _EditorScreenState extends State<EditorScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('تم', style: GoogleFonts.cairo()),
+                child: const Text('تم'),
               ),
             ],
           ),
@@ -820,7 +826,7 @@ class _EditorScreenState extends State<EditorScreen> {
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.cairo(color: Colors.white70, fontSize: 12),
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ),
           ],
@@ -844,6 +850,130 @@ class _EditorScreenState extends State<EditorScreen> {
     );
   }
 
+  Widget _buildTextSettingsPanel(AppState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'إعدادات النص',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 15),
+
+        // Letter Spacing
+        _buildMiniSlider(
+          'تباعد الحروف',
+          state.letterSpacing,
+          -5,
+          20,
+          state.updateLetterSpacing,
+        ),
+
+        // Word Spacing
+        _buildMiniSlider(
+          'تباعد الكلمات',
+          state.wordSpacing,
+          -5,
+          30,
+          state.updateWordSpacing,
+        ),
+
+        // Line Height
+        _buildMiniSlider(
+          'ارتفاع السطر',
+          state.lineHeight,
+          0.5,
+          3,
+          state.updateLineHeight,
+        ),
+
+        const SizedBox(height: 10),
+
+        // Font Weight
+        const Text(
+          'وزن الخط:',
+          style: TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [
+            _buildWeightChip('خفيف', FontWeight.w300, state),
+            _buildWeightChip('عادي', FontWeight.normal, state),
+            _buildWeightChip('متوسط', FontWeight.w500, state),
+            _buildWeightChip('عريض', FontWeight.bold, state),
+            _buildWeightChip('أسود', FontWeight.w900, state),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMiniSlider(
+    String label,
+    double value,
+    double min,
+    double max,
+    Function(double) onChanged,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+          ),
+          Expanded(
+            child: Slider(
+              value: value.clamp(min, max),
+              min: min,
+              max: max,
+              activeColor: const Color(0xFF00D9FF),
+              inactiveColor: const Color(0xFF00D9FF).withOpacity(0.3),
+              onChanged: onChanged,
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: Text(
+              value.toStringAsFixed(1),
+              style: const TextStyle(
+                color: Color(0xFF00D9FF),
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeightChip(String label, FontWeight weight, AppState state) {
+    final isSelected = state.fontWeight == weight;
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          color: isSelected ? Colors.white : Colors.white70,
+          fontWeight: weight,
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (_) => state.updateFontWeight(weight),
+      selectedColor: const Color(0xFF00D9FF),
+      backgroundColor: const Color(0xFF0f3460),
+    );
+  }
+
   Widget _buildOpenTypePanel(AppState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,9 +981,9 @@ class _EditorScreenState extends State<EditorScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               'خصائص OpenType',
-              style: GoogleFonts.cairo(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -863,19 +993,16 @@ class _EditorScreenState extends State<EditorScreen> {
               children: [
                 TextButton(
                   onPressed: state.enableAllFeatures,
-                  child: Text(
+                  child: const Text(
                     'تفعيل الكل',
-                    style: GoogleFonts.cairo(
-                      color: const Color(0xFF6C63FF),
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Color(0xFF6C63FF), fontSize: 12),
                   ),
                 ),
                 TextButton(
                   onPressed: state.disableAllFeatures,
-                  child: Text(
+                  child: const Text(
                     'تعطيل الكل',
-                    style: GoogleFonts.cairo(color: Colors.white54, fontSize: 12),
+                    style: TextStyle(color: Colors.white54, fontSize: 12),
                   ),
                 ),
               ],
@@ -883,29 +1010,68 @@ class _EditorScreenState extends State<EditorScreen> {
           ],
         ),
         const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _buildFeatureChip('liga', 'الربط القياسي', state),
-            _buildFeatureChip('kern', 'تقنين المسافات', state),
-            _buildFeatureChip('calt', 'البدائل السياقية', state),
-            _buildFeatureChip('locl', 'الأشكال المحلية', state),
-            _buildFeatureChip('rlig', 'الربط المطلوب', state),
-            _buildFeatureChip('dlig', 'الربط الاختياري', state),
-            _buildFeatureChip('ss01', 'المجموعة 1', state),
-            _buildFeatureChip('ss02', 'المجموعة 2', state),
-            _buildFeatureChip('ss03', 'المجموعة 3', state),
-            _buildFeatureChip('swsh', 'الزخرفة', state),
-            _buildFeatureChip('salt', 'البدائل الأسلوبية', state),
-            _buildFeatureChip('smcp', 'حروف صغيرة', state),
-            _buildFeatureChip('onum', 'أرقام تقليدية', state),
-            _buildFeatureChip('lnum', 'أرقام مصفوفة', state),
-            _buildFeatureChip('tnum', 'أرقام جدولية', state),
-            _buildFeatureChip('frac', 'كسور', state),
-          ],
-        ),
+
+        // Ligatures
+        _buildFeatureSection('الربط (Ligatures)', [
+          _buildFeatureChip('liga', 'الربط القياسي', state),
+          _buildFeatureChip('rlig', 'الربط المطلوب', state),
+          _buildFeatureChip('dlig', 'الربط الاختياري', state),
+        ]),
+
+        // Alternates
+        _buildFeatureSection('البدائل (Alternates)', [
+          _buildFeatureChip('calt', 'البدائل السياقية', state),
+          _buildFeatureChip('salt', 'البدائل الأسلوبية', state),
+          _buildFeatureChip('swsh', 'الزخرفة', state),
+        ]),
+
+        // Stylistic Sets
+        _buildFeatureSection('المجموعات الأسلوبية', [
+          _buildFeatureChip('ss01', 'المجموعة 1', state),
+          _buildFeatureChip('ss02', 'المجموعة 2', state),
+          _buildFeatureChip('ss03', 'المجموعة 3', state),
+        ]),
+
+        // Other
+        _buildFeatureSection('أخرى', [
+          _buildFeatureChip('kern', 'تقنين المسافات', state),
+          _buildFeatureChip('locl', 'الأشكال المحلية', state),
+          _buildFeatureChip('smcp', 'حروف صغيرة', state),
+        ]),
+
+        // Numbers
+        _buildFeatureSection('الأرقام', [
+          _buildFeatureChip('onum', 'أرقام تقليدية', state),
+          _buildFeatureChip('lnum', 'أرقام مصفوفة', state),
+          _buildFeatureChip('tnum', 'أرقام جدولية', state),
+          _buildFeatureChip('frac', 'كسور', state),
+        ]),
       ],
+    );
+  }
+
+  Widget _buildFeatureSection(String title, List<Widget> chips) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white54,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: chips,
+          ),
+        ],
+      ),
     );
   }
 
@@ -915,7 +1081,7 @@ class _EditorScreenState extends State<EditorScreen> {
     return FilterChip(
       label: Text(
         '$label ($tag)',
-        style: GoogleFonts.cairo(
+        style: TextStyle(
           fontSize: 11,
           color: isEnabled ? Colors.white : Colors.white70,
         ),
@@ -927,77 +1093,6 @@ class _EditorScreenState extends State<EditorScreen> {
       checkmarkColor: Colors.white,
       side: BorderSide(
         color: isEnabled ? const Color(0xFF6C63FF) : Colors.transparent,
-      ),
-    );
-  }
-
-  Widget _buildVariableAxesPanel(AppState state) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'محاور Variable Font',
-          style: GoogleFonts.cairo(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 15),
-        _buildAxisSlider('wght', 'الوزن (Weight)', 100, 900, state),
-        _buildAxisSlider('wdth', 'العرض (Width)', 50, 200, state),
-        _buildAxisSlider('slnt', 'الميل (Slant)', -90, 90, state),
-      ],
-    );
-  }
-
-  Widget _buildAxisSlider(
-    String tag,
-    String label,
-    double min,
-    double max,
-    AppState state,
-  ) {
-    final value = state.axes[tag] ?? min;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: GoogleFonts.cairo(color: Colors.white70, fontSize: 13),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00D9FF).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  value.toInt().toString(),
-                  style: GoogleFonts.cairo(
-                    color: const Color(0xFF00D9FF),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Slider(
-            value: value.clamp(min, max),
-            min: min,
-            max: max,
-            activeColor: const Color(0xFF00D9FF),
-            inactiveColor: const Color(0xFF00D9FF).withOpacity(0.3),
-            onChanged: (v) => state.updateAxis(tag, v),
-          ),
-        ],
       ),
     );
   }
