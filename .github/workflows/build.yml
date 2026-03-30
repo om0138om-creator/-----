@@ -35,6 +35,9 @@ jobs:
       - name: 📦 Get dependencies
         run: flutter pub get
 
+      - name: 🎨 Format code
+        run: dart format . --fix
+
       - name: 🏗️ Build APK (Release)
         run: flutter build apk --release --no-tree-shake-icons
 
