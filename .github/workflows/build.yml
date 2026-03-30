@@ -1,4 +1,4 @@
-name: Build Flutter APK & iOS
+name: Build Flutter APK
 
 on:
   push:
@@ -9,12 +9,7 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
-env:
-  FLUTTER_VERSION: '3.16.0'
-  JAVA_VERSION: '17'
-
 jobs:
-  # ==================== Build Android APK ====================
   build-android:
     name: Build Android APK
     runs-on: ubuntu-latest
@@ -27,135 +22,46 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '17'
           cache: 'gradle'
 
       - name: 🐦 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          flutter-version: '3.16.0'
           channel: 'stable'
           cache: true
 
       - name: 📦 Get dependencies
         run: flutter pub get
 
-      - name: 🔍 Analyze code
-        run: flutter analyze --no-fatal-infos
-
-      - name: 🏗️ Build APK (Debug)
-        run: flutter build apk --debug
-
       - name: 🏗️ Build APK (Release)
-        run: flutter build apk --release
-
-      - name: 🏗️ Build App Bundle
-        run: flutter build appbundle --release
-
-      - name: 📤 Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: 📤 Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
+          name: font-studio-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      - name: 📤 Upload App Bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-bundle
-          path: build/app/outputs/bundle/release/app-release.aab
-
-  # ==================== Build iOS ====================
-  build-ios:
-    name: Build iOS
-    runs-on: macos-latest
-    
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
-
-      - name: 🐦 Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
-          cache: true
-
-      - name: 📦 Get dependencies
-        run: flutter pub get
-
-      - name: 🏗️ Build iOS (No Codesign)
-        run: flutter build ios --release --no-codesign
-
-      - name: 📦 Create IPA folder
-        run: |
-          mkdir -p build/ios/ipa
-          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/
-
-      - name: 📤 Upload iOS Build
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-build
-          path: build/ios/ipa/
-
-  # ==================== Create Release ====================
   release:
     name: Create Release
-    needs: [build-android, build-ios]
+    needs: build-android
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     
     steps:
-      - name: 📥 Download Android APK
+      - name: 📥 Download APK
         uses: actions/download-artifact@v4
         with:
-          name: release-apk
-          path: ./artifacts/android
-
-      - name: 📥 Download App Bundle
-        uses: actions/download-artifact@v4
-        with:
-          name: app-bundle
-          path: ./artifacts/android
-
-      - name: 📥 Download iOS Build
-        uses: actions/download-artifact@v4
-        with:
-          name: ios-build
-          path: ./artifacts/ios
-
-      - name: 🏷️ Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          name: font-studio-apk
+          path: ./
 
       - name: 📝 Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Font Studio v${{ steps.get_version.outputs.VERSION }}
-          body: |
-            ## 🎨 Font Studio v${{ steps.get_version.outputs.VERSION }}
-            
-            ### ✨ ما الجديد
-            - دعم كامل لخصائص OpenType
-            - محرر نصوص احترافي
-            - دعم Variable Fonts
-            - واجهة عربية بالكامل
-            
-            ### 📥 التحميل
-            - **Android APK**: للتثبيت المباشر
-            - **Android AAB**: لرفعه على Google Play
-            
-            ### 📱 المتطلبات
-            - Android 5.0 (API 21) أو أحدث
-            - iOS 12.0 أو أحدث
-          files: |
-            ./artifacts/android/app-release.apk
-            ./artifacts/android/app-release.aab
+          name: Font Studio ${{ github.ref_name }}
+          files: app-release.apk
           draft: false
           prerelease: false
         env:
